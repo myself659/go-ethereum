@@ -49,15 +49,15 @@ The state transitioning model does all all the necessary work to work out a vali
 6) Derive new state root
 */
 type StateTransition struct {
-	gp         *GasPool
-	msg        Message
-	gas        uint64
-	gasPrice   *big.Int
-	initialGas uint64
-	value      *big.Int
-	data       []byte
-	state      vm.StateDB
-	evm        *vm.EVM
+	gp         *GasPool // gas统计，用于出块的费用统计？
+	msg        Message  // transaction Message
+	gas        uint64 // gas数量
+	gasPrice   *big.Int // gas价格
+	initialGas uint64  // 固有gas
+	value      *big.Int // 交易值
+	data       []byte  // 数据 
+	state      vm.StateDB // 状态
+	evm        *vm.EVM // 关联EVM,执行智能合约
 }
 
 // Message represents a message sent to a contract.
@@ -82,7 +82,7 @@ func IntrinsicGas(data []byte, contractCreation, homestead bool) (uint64, error)
 	if contractCreation && homestead {
 		gas = params.TxGasContractCreation
 	} else {
-		gas = params.TxGas
+		gas = params.TxGas //  不创建交易的gas费用
 	}
 	// Bump the required gas by the amount of transactional data
 	if len(data) > 0 {
@@ -189,11 +189,12 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 	homestead := st.evm.ChainConfig().IsHomestead(st.evm.BlockNumber)
 	contractCreation := msg.To() == nil
 
-	// Pay intrinsic gas
+	// Pay intrinsic gas 计算固有的gas费用
 	gas, err := IntrinsicGas(st.data, contractCreation, homestead)
 	if err != nil {
 		return nil, 0, false, err
 	}
+	// 扣除固有的gas费用
 	if err = st.useGas(gas); err != nil {
 		return nil, 0, false, err
 	}

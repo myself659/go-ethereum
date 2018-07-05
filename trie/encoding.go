@@ -42,7 +42,7 @@ func hexToCompact(hex []byte) []byte {
 	}
 	buf := make([]byte, len(hex)/2+1)
 	buf[0] = terminator << 5 // the flag byte
-	if len(hex)&1 == 1 {
+	if len(hex)&1 == 1 {     // 奇数情行
 		buf[0] |= 1 << 4 // odd flag
 		buf[0] |= hex[0] // first nibble is contained in the first byte
 		hex = hex[1:]
@@ -63,6 +63,7 @@ func compactToHex(compact []byte) []byte {
 	return base[chop:]
 }
 
+// keybytesToHex
 func keybytesToHex(str []byte) []byte {
 	l := len(str)*2 + 1
 	var nibbles = make([]byte, l)
@@ -78,7 +79,7 @@ func keybytesToHex(str []byte) []byte {
 // This can only be used for keys of even length.
 func hexToKeybytes(hex []byte) []byte {
 	if hasTerm(hex) {
-		hex = hex[:len(hex)-1]
+		hex = hex[:len(hex)-1] // 去尾
 	}
 	if len(hex)&1 != 0 {
 		panic("can't convert hex key of odd length")
@@ -90,7 +91,7 @@ func hexToKeybytes(hex []byte) []byte {
 
 func decodeNibbles(nibbles []byte, bytes []byte) {
 	for bi, ni := 0, 0; ni < len(nibbles); bi, ni = bi+1, ni+2 {
-		bytes[bi] = nibbles[ni]<<4 | nibbles[ni+1]
+		bytes[bi] = nibbles[ni]<<4 | nibbles[ni+1] // 为什么数据偏移合并不会影响，值的范围有影响，全是16进制数字
 	}
 }
 
@@ -110,5 +111,5 @@ func prefixLen(a, b []byte) int {
 
 // hasTerm returns whether a hex key has the terminator flag.
 func hasTerm(s []byte) bool {
-	return len(s) > 0 && s[len(s)-1] == 16
+	return len(s) > 0 && s[len(s)-1] == 16 // 最后的字节值是16 0001 0000，正常情况怎么办？
 }

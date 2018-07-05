@@ -24,7 +24,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rlp"
 )
-
+// indices 目录 
 var indices = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "[17]"}
 
 type node interface {
@@ -35,10 +35,11 @@ type node interface {
 
 type (
 	fullNode struct {
+		// 为什么是17个，0到F前缀 最后一个节点存储本路径下的数据
 		Children [17]node // Actual trie node data to encode/decode (needs custom encoder)
 		flags    nodeFlag
 	}
-	shortNode struct {
+	shortNode struct { // 叶子节点 或者扩展节点
 		Key   []byte
 		Val   node
 		flags nodeFlag

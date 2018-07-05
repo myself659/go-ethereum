@@ -213,6 +213,7 @@ func NewBlock(header *Header, txs []*Transaction, uncles []*Header, receipts []*
 		b.header.ReceiptHash = EmptyRootHash
 	} else {
 		b.header.ReceiptHash = DeriveSha(Receipts(receipts))
+		// bloom filter 与receipts 关系
 		b.header.Bloom = CreateBloom(receipts)
 	}
 

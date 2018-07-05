@@ -73,7 +73,7 @@ type Trie struct {
 	// cachegen increases by one with each commit operation.
 	// new nodes are tagged with the current generation and unloaded
 	// when their generation is older than than cachegen-cachelimit.
-	cachegen, cachelimit uint16
+	cachegen, cachelimit uint16 //  cachegen 相当于版本号，每次提交加1
 }
 
 // SetCacheLimit sets the number of 'cache generations' to keep.
@@ -131,7 +131,10 @@ func (t *Trie) Get(key []byte) []byte {
 // The value bytes must not be modified by the caller.
 // If a node was not found in the database, a MissingNodeError is returned.
 func (t *Trie) TryGet(key []byte) ([]byte, error) {
+	// key from raw  to  hex
 	key = keybytesToHex(key)
+	// 从根节点开始 key key起始位置
+	// 值，新的根节点 是否解决  错误
 	value, newroot, didResolve, err := t.tryGet(t.root, key, 0)
 	if err == nil && didResolve {
 		t.root = newroot
@@ -140,12 +143,14 @@ func (t *Trie) TryGet(key []byte) ([]byte, error) {
 }
 
 func (t *Trie) tryGet(origNode node, key []byte, pos int) (value []byte, newnode node, didResolve bool, err error) {
+	// 获取接口类型
 	switch n := (origNode).(type) {
-	case nil:
+	case nil: // 空节点
 		return nil, nil, false, nil
 	case valueNode:
 		return n, n, false, nil
-	case *shortNode:
+	case *shortNode: // 叶子节点或者扩展节点
+		// 检查key是否一致
 		if len(key)-pos < len(n.Key) || !bytes.Equal(n.Key, key[pos:pos+len(n.Key)]) {
 			// key not found in trie
 			return nil, n, false, nil
@@ -157,7 +162,7 @@ func (t *Trie) tryGet(origNode node, key []byte, pos int) (value []byte, newnode
 			n.flags.gen = t.cachegen
 		}
 		return value, n, didResolve, err
-	case *fullNode:
+	case *fullNode: // 分支节点
 		value, newnode, didResolve, err = t.tryGet(n.Children[key[pos]], key, pos+1)
 		if err == nil && didResolve {
 			n = n.copy()
@@ -429,6 +434,7 @@ func (t *Trie) resolve(n node, prefix []byte) (node, error) {
 	return n, nil
 }
 
+// resolveHash resolveHash
 func (t *Trie) resolveHash(n hashNode, prefix []byte) (node, error) {
 	cacheMissCounter.Inc(1)
 

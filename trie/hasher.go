@@ -25,7 +25,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto/sha3"
 	"github.com/ethereum/go-ethereum/rlp"
 )
-
+// hasher  hash处理
 type hasher struct {
 	tmp        *bytes.Buffer
 	sha        hash.Hash
@@ -175,6 +175,7 @@ func (h *hasher) store(n node, db *Database, force bool) (node, error) {
 		db.lock.Lock()
 
 		hash := common.BytesToHash(hash)
+		// hash作key rlp内容
 		db.insert(hash, h.tmp.Bytes())
 
 		// Track all direct parent->child node references
